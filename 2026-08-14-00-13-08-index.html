@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#54151c">
+<meta name="description" content="Grade-12 Learning Hub">
+<title>Grade-12 Learning Hub</title>
+
+<style>
+:root{
+  --m:#54151c;--m2:#7b252e;--g:#d1a84a;
+  --bg:#fbf8f3;--tx:#292222;--line:#eadfd5;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--tx);
+  font-family:Arial,"Padauk",sans-serif;
+}
+.app{
+  max-width:520px;margin:auto;min-height:100vh;
+  padding-bottom:72px;
+}
+header{
+  padding:20px 18px;
+  background:linear-gradient(135deg,var(--m),#27070a);
+  color:white;border-bottom:3px solid var(--g);
+  border-radius:0 0 24px 24px;
+}
+.head{display:flex;align-items:center;gap:12px}
+.logo{
+  width:48px;height:48px;border-radius:15px;background:#fff;
+  display:grid;place-items:center;font-size:25px;
+}
+h1{font-size:19px;margin:0;color:#f7e9b9}
+header p{margin:4px 0 0;font-size:12px;opacity:.8}
+
+.page{display:none;padding:18px}
+.page.active{display:block;animation:in .25s}
+@keyframes in{
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.hero,.card,.item,.stat{
+  background:#fff;border:1px solid var(--line);
+  border-radius:17px;box-shadow:0 5px 16px #00000008;
+}
+.hero{padding:20px}
+.hero h2,.title h2{color:var(--m)}
+
+.stats,.grid{
+  display:grid;gap:10px;margin-top:13px;
+}
+.stats{grid-template-columns:repeat(3,1fr)}
+.grid{grid-template-columns:1fr 1fr}
+.stat{text-align:center;padding:12px}
+.stat b{display:block;font-size:20px;color:var(--m)}
+.stat small{color:#777}
+.card{padding:17px;cursor:pointer}
+.card .ico{font-size:28px}
+.card b{display:block;margin-top:8px;color:var(--m)}
+
+.title{
+  display:flex;justify-content:space-between;
+  align-items:center;gap:8px;margin-bottom:12px;
+}
+.title h2{margin:0;font-size:19px}
+.btn-group{display:flex;gap:6px;flex-wrap:wrap}
+.add{
+  border:0;border-radius:10px;padding:9px 12px;
+  background:var(--m);color:#f7e9b9;
+  font-weight:bold;cursor:pointer;
+}
+
+input,textarea,select{
+  width:100%;padding:12px;border:1px solid #ddcfc4;
+  border-radius:10px;margin-bottom:9px;
+  background:#fff;font:inherit;
+}
+textarea{min-height:100px}
+
+.list{display:grid;gap:11px}
+.item{
+  padding:15px;position:relative;
+}
+.item b{
+  display:block;color:var(--m);
+  padding-right:55px;margin-bottom:7px;
+}
+.item small{white-space:pre-wrap;line-height:1.55}
+
+.del{
+  position:absolute;right:9px;top:9px;
+  border:0;background:#ffe0e0;color:#a00;
+  border-radius:6px;padding:5px 8px;
+  font-size:10px;cursor:pointer;
+}
+
+.file-preview{
+  width:100%;max-height:400px;object-fit:contain;
+  border-radius:10px;margin-top:8px;
+  border:1px solid #ddd;background:#fafafa;
+}
+.file-btn{
+  display:inline-block;margin-top:8px;
+  padding:10px 12px;background:#f0e6dd;
+  color:var(--m);border-radius:9px;
+  text-decoration:none;font-weight:bold;
+}
+
+.choice{
+  width:100%;text-align:left;
+  border:1px solid #e5d8ce;
+  background:#fbf7f2;border-radius:9px;
+  padding:10px;margin:4px 0;cursor:pointer;
+}
+.choice:disabled{cursor:default}
+.correct{background:#d8f0dd!important}
+.wrong{background:#f7d8d8!important}
+
+.empty{
+  text-align:center;padding:28px;color:#888;
+  background:#fff;border:1px dashed #d8c8bb;
+  border-radius:15px;
+}
+.media{width:100%;margin-top:8px;border-radius:10px}
+
+.nav{
+  position:fixed;bottom:0;left:50%;
+  transform:translateX(-50%);
+  width:min(520px,100%);height:64px;
+  background:#fff;border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(5,1fr);
+  z-index:5;
+}
+.nav button{
+  border:0;background:none;color:#888;font-size:10px;
+  cursor:pointer;
+}
+.nav button span{display:block;font-size:19px}
+.nav button.active{color:var(--m);font-weight:bold}
+
+.modal{
+  display:none;position:fixed;inset:0;
+  background:#0008;z-index:20;align-items:flex-end;
+}
+.modal.show{display:flex}
+.sheet{
+  width:min(520px,100%);background:#fff;
+  border-radius:20px 20px 0 0;padding:20px;
+  max-height:88vh;overflow:auto;
+  border-top:3px solid var(--g);
+}
+.actions{display:flex;gap:8px}
+.actions button{
+  flex:1;padding:11px;border:0;
+  border-radius:10px;font-weight:bold;
+  cursor:pointer;
+}
+.save{background:var(--m);color:#f7e9b9}
+.cancel{background:#eee}
+
+.notice{
+  font-size:12px;color:#777;
+  margin:4px 0 12px;
+}
+
+/* SPLASH / INTRO */
+#splash{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;color:#fff;
+  background:radial-gradient(circle at center,#7b252e 0%,#54151c 62%,#250609 100%);
+  transition:opacity .4s ease;cursor:pointer
+}
+.splash-inner{padding:22px}
+.splash-logo{
+  width:130px;height:130px;margin:auto;border-radius:50%;
+  background:#fff;border:4px solid var(--g);
+  display:grid;place-items:center;font-size:65px;
+  box-shadow:0 0 35px #d1a84a99
+}
+#splash h1{font-size:22px;margin:16px 0 5px;color:#f7e9b9;letter-spacing:1px}
+#splash p{font-size:12px;opacity:.9;margin:5px 0}
+.loading{width:170px;height:5px;margin:20px auto 10px;background:#ffffff33;border-radius:10px;overflow:hidden}
+.loading-bar{height:100%;width:0;background:#f7e9b9;animation:load 1.8s linear forwards}
+.tap-hint{font-size:12px;color:#f7e9b9;font-weight:bold}
+@keyframes load{to{width:100%}}
+
+</style>
+</head>
+
+<body>
+
+<!-- SPLASH / INTRO SCREEN -->
+<div id="splash" onclick="dismissSplash(true)">
+  <div class="splash-inner">
+    <div class="splash-logo">🎓</div>
+    <h1>GRADE-12 LEARNING</h1>
+    <p>Student Learning Hub</p>
+    <div class="loading"><div class="loading-bar"></div></div>
+    <span class="tap-hint">🔊 စခရင်ကို နှိပ်၍ စတင်ပါ</span>
+  </div>
+</div>
+
+
+<div class="app">
+
+<header>
+  <div class="head">
+    <div class="logo">🎓</div>
+    <div>
+      <h1>GRADE-12 LEARNING</h1>
+      <p>Student Learning Hub</p>
+    </div>
+  </div>
+</header>
+
+<!-- HOME -->
+<section id="home" class="page active">
+  <div class="hero">
+    <h2>မင်္ဂလာပါ 👋</h2>
+    <p>
+      Grade-12 သင်ခန်းစာ၊ မှတ်စု၊ MCQ၊ Video နဲ့ Music
+      တွေကို တစ်နေရာတည်းမှာ လေ့လာနိုင်ပါတယ်။
+    </p>
+
+    <div class="stats">
+      <div class="stat">
+        <b id="ncnt">0</b>
+        <small>မှတ်စု</small>
+      </div>
+      <div class="stat">
+        <b id="qcnt">0</b>
+        <small>MCQ</small>
+      </div>
+      <div class="stat">
+        <b id="mcnt">0</b>
+        <small>Media</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card" onclick="go('notes')">
+      <div class="ico">📚</div>
+      <b>မှတ်စုများ</b>
+      <small>စာ + ဖိုင် + ဓာတ်ပုံ</small>
+    </div>
+
+    <div class="card" onclick="go('practice')">
+      <div class="ico">📝</div>
+      <b>လေ့ကျင့်ခန်း</b>
+      <small>MCQ Practice</small>
+    </div>
+
+    <div class="card" onclick="go('videos')">
+      <div class="ico">🎬</div>
+      <b>Videos</b>
+      <small>Lesson Videos</small>
+    </div>
+
+    <div class="card" onclick="go('music')">
+      <div class="ico">🎵</div>
+      <b>Music</b>
+      <small>Audio Player</small>
+    </div>
+  </div>
+</section>
+
+<!-- NOTES -->
+<section id="notes" class="page">
+  <div class="title">
+    <h2>📚 မှတ်စုများ</h2>
+
+    <div class="btn-group">
+      <button class="add" onclick="openM('noteM')">
+        ✏️ စာရေး
+      </button>
+
+      <button class="add" onclick="document.getElementById('noteFileInput').click()">
+        📁 ဖိုင်
+      </button>
+    </div>
+  </div>
+
+  <p class="notice">
+    📁 ဖုန်းထဲမှ ဓာတ်ပုံ၊ PDF၊ TXT၊ DOC၊ DOCX ဖိုင်များထည့်နိုင်သည်။
+  </p>
+
+  <input
+    id="noteFileInput"
+    type="file"
+    accept="image/*,application/pdf,text/plain,.doc,.docx"
+    hidden
+    onchange="addFileNote(this)"
+  >
+
+  <input
+    id="search"
+    placeholder="🔍 မှတ်စုရှာရန်..."
+    oninput="renderNotes()"
+  >
+
+  <div id="notesList" class="list"></div>
+</section>
+
+<!-- PRACTICE -->
+<section id="practice" class="page">
+  <div class="title">
+    <h2>📝 MCQ</h2>
+    <button class="add" onclick="openM('quizM')">＋ Add Quiz</button>
+  </div>
+
+  <div id="quizList" class="list"></div>
+</section>
+
+<!-- VIDEOS -->
+<section id="videos" class="page">
+  <div class="title">
+    <h2>🎬 Videos</h2>
+    <button class="add" onclick="document.getElementById('videoInput').click()">
+      ＋ Add
+    </button>
+  </div>
+
+  <input
+    id="videoInput"
+    type="file"
+    accept="video/*"
+    hidden
+    onchange="addVideo(this)"
+  >
+
+  <div id="videoList" class="list"></div>
+</section>
+
+<!-- MUSIC -->
+<section id="music" class="page">
+  <div class="title">
+    <h2>🎵 Music</h2>
+    <button class="add" onclick="document.getElementById('audioInput').click()">
+      ＋ Add
+    </button>
+  </div>
+
+  <input
+    id="audioInput"
+    type="file"
+    accept="audio/*"
+    hidden
+    onchange="addMusic(this)"
+  >
+
+  <div id="musicList" class="list"></div>
+</section>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="active" onclick="go('home',this)">
+    <span>🏠</span>Home
+  </button>
+  <button onclick="go('notes',this)">
+    <span>📚</span>Notes
+  </button>
+  <button onclick="go('practice',this)">
+    <span>📝</span>Practice
+  </button>
+  <button onclick="go('videos',this)">
+    <span>🎬</span>Videos
+  </button>
+  <button onclick="go('music',this)">
+    <span>🎵</span>Music
+  </button>
+</nav>
+
+</div>
+
+<!-- NOTE MODAL -->
+<div class="modal" id="noteM">
+  <div class="sheet">
+    <h3>✏️ မှတ်စုအသစ်</h3>
+
+    <input id="ns" placeholder="Subject (ဥပမာ - Physics)">
+    <input id="ch" placeholder="Chapter / Title">
+
+    <textarea
+      id="nt"
+      placeholder="မှတ်စုရေးပါ..."
+    ></textarea>
+
+    <div class="actions">
+      <button class="save" onclick="saveNote()">Save</button>
+      <button class="cancel" onclick="closeM('noteM')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ MODAL -->
+<div class="modal" id="quizM">
+  <div class="sheet">
+    <h3>📝 MCQ အသစ်</h3>
+
+    <input id="qq" placeholder="မေးခွန်း">
+    <input id="a" placeholder="Option A">
+    <input id="b" placeholder="Option B">
+    <input id="c" placeholder="Option C">
+    <input id="d" placeholder="Option D">
+
+    <select id="correct">
+      <option value="0">အဖြေမှန် A</option>
+      <option value="1">အဖြေမှန် B</option>
+      <option value="2">အဖြေမှန် C</option>
+      <option value="3">အဖြေမှန် D</option>
+    </select>
+
+    <div class="actions">
+      <button class="save" onclick="saveQuiz()">Save</button>
+      <button class="cancel" onclick="closeM('quizM')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const K = "G12_HUB_V4";
+
+let data = {
+  notes: [],
+  quizzes: []
+};
+
+/* Load saved data */
+try {
+  const old = localStorage.getItem(K);
+  if (old) {
+    data = JSON.parse(old);
+  }
+} catch (e) {
+  data = {notes:[], quizzes:[]};
+}
+
+/* Helpers */
+function esc(s){
+  return String(s || "").replace(
+    /[&<>'"]/g,
+    x => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      "'":"&#39;",
+      '"':"&quot;"
+    }[x])
+  );
+}
+
+function save(){
+  try{
+    localStorage.setItem(K, JSON.stringify(data));
+    return true;
+  }catch(e){
+    alert(
+      "Storage မလုံလောက်ပါ။ ဖိုင်အရမ်းကြီးနေရင် ဖိုင်သေးသေးတစ်ခုနဲ့ စမ်းပါ။"
+    );
+    return false;
+  }
+}
+
+/* Navigation */
+function go(id, btn){
+  document.querySelectorAll(".page").forEach(
+    x => x.classList.remove("active")
+  );
+
+  document.getElementById(id).classList.add("active");
+
+  document.querySelectorAll(".nav button").forEach(
+    x => x.classList.remove("active")
+  );
+
+  if(btn) btn.classList.add("active");
+
+  stats();
+}
+
+/* Modal */
+function openM(id){
+  document.getElementById(id).classList.add("show");
+}
+
+function closeM(id){
+  document.getElementById(id).classList.remove("show");
+}
+
+/* Stats */
+function stats(){
+  document.getElementById("ncnt").textContent = data.notes.length;
+  document.getElementById("qcnt").textContent = data.quizzes.length;
+
+  const media =
+    document.querySelectorAll(
+      "#musicList .item,#videoList .item"
+    ).length;
+
+  document.getElementById("mcnt").textContent = media;
+}
+
+/* =========================
+   TEXT NOTES
+========================= */
+
+function saveNote(){
+
+  const s = document.getElementById("ns").value.trim();
+  const t = document.getElementById("ch").value.trim();
+  const n = document.getElementById("nt").value.trim();
+
+  if(!s || !t || !n){
+    alert("Subject၊ Chapter နဲ့ မှတ်စုကို အပြည့်အစုံဖြည့်ပါ။");
+    return;
+  }
+
+  data.notes.unshift({
+    id: Date.now(),
+    type: "text",
+    s: s,
+    t: t,
+    n: n
+  });
+
+  if(save()){
+    renderNotes();
+
+    document.getElementById("ns").value = "";
+    document.getElementById("ch").value = "";
+    document.getElementById("nt").value = "";
+
+    closeM("noteM");
+  }
+}
+
+/* =========================
+   FILE NOTES
+========================= */
+
+function addFileNote(input){
+  const file = input.files[0];
+  if(!file) return;
+
+  const allowed =
+    file.type === "application/pdf" ||
+    file.type === "text/plain" ||
+    /\.txt$/i.test(file.name) ||
+    /\.doc$/i.test(file.name) ||
+    /\.docx$/i.test(file.name);
+
+  if(!allowed){
+    alert("PDF / TXT / DOC / DOCX ဖိုင်များသာ ထည့်နိုင်ပါသည်။");
+    input.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    data.notes.unshift({
+      id: Date.now(),
+      type: "file",
+      subject: "📄 ဖိုင်မှတ်စု",
+      chapter: file.name,
+      fileData: e.target.result
+    });
+
+    saveData();
+    renderNotes();
+    input.value = "";
+  };
+
+  reader.readAsDataURL(file);
+}
+
+/* =========================
+   RENDER NOTES
+========================= */
+
+function renderNotes(){
+
+  const search =
+    document.getElementById("search");
+
+  const keyword =
+    (search.value || "").toLowerCase();
+
+  const arr = data.notes.filter(x =>
+    (x.s || "").toLowerCase().includes(keyword) ||
+    (x.t || "").toLowerCase().includes(keyword) ||
+    (x.n || "").toLowerCase().includes(keyword)
+  );
+
+  const box =
+    document.getElementById("notesList");
+
+  if(!arr.length){
+
+    box.innerHTML = `
+      <div class="empty">
+        📚 မှတ်စုမရှိသေးပါ။
+        <br><br>
+        ✏️ စာရေး သို့မဟုတ် 📁 ဖိုင် ကိုနှိပ်ပါ။
+      </div>
+    `;
+
+    stats();
+    return;
+  }
+
+  box.innerHTML = arr.map(x => {
+
+    let content = "";
+
+    if(x.type === "file"){
+
+      if(x.isImage){
+
+        content = `
+          <img
+            class="file-preview"
+            src="${x.fileData}"
+            alt="${esc(x.t)}"
+          >
+        `;
+
+      }else{
+
+        content = `
+          <a
+            class="file-btn"
+            href="${x.fileData}"
+            download="${esc(x.t)}"
+          >
+            📄 ${esc(x.t)}
+            <br>
+            <small>ဖွင့်ရန် / Download</small>
+          </a>
+        `;
+      }
+
+    }else{
+
+      content = `
+        <small>${esc(x.n)}</small>
+      `;
+    }
+
+    return `
+      <div class="item">
+
+        <button
+          class="del"
+          onclick="deleteNote(${x.id})"
+        >
+          Delete
+        </button>
+
+        <b>
+          ${x.type === "file" ? "📁" : "📘"}
+          ${esc(x.s)} — ${esc(x.t)}
+        </b>
+
+        ${content}
+
+      </div>
+    `;
+
+  }).join("");
+
+  stats();
+}
+
+/* Delete note */
+function deleteNote(id){
+
+  if(!confirm("ဒီမှတ်စုကို ဖျက်မှာ သေချာပါသလား?")){
+    return;
+  }
+
+  data.notes =
+    data.notes.filter(x => x.id != id);
+
+  save();
+  renderNotes();
+}
+
+/* =========================
+   QUIZ
+========================= */
+
+function saveQuiz(){
+
+  const q =
+    document.getElementById("qq").value.trim();
+
+  const ans = [
+    document.getElementById("a").value.trim(),
+    document.getElementById("b").value.trim(),
+    document.getElementById("c").value.trim(),
+    document.getElementById("d").value.trim()
+  ];
+
+  if(!q || ans.some(x => !x)){
+    alert("မေးခွန်းနှင့် Option ၄ ခု ဖြည့်ပါ။");
+    return;
+  }
+
+  data.quizzes.push({
+    id: Date.now(),
+    q: q,
+    ans: ans,
+    c: Number(
+      document.getElementById("correct").value
+    )
+  });
+
+  if(save()){
+    renderQuiz();
+
+    document.getElementById("qq").value = "";
+    document.getElementById("a").value = "";
+    document.getElementById("b").value = "";
+    document.getElementById("c").value = "";
+    document.getElementById("d").value = "";
+
+    closeM("quizM");
+  }
+}
+
+function renderQuiz(){
+
+  const box =
+    document.getElementById("quizList");
+
+  if(!data.quizzes.length){
+
+    box.innerHTML = `
+      <div class="empty">
+        📝 MCQ မရှိသေးပါ။
+      </div>
+    `;
+
+    stats();
+    return;
+  }
+
+  box.innerHTML =
+    data.quizzes.map((x,j) => `
+
+      <div class="item">
+
+        <button
+          class="del"
+          onclick="deleteQuiz(${x.id})"
+        >
+          Delete
+        </button>
+
+        <b>
+          ${j+1}. ${esc(x.q)}
+        </b>
+
+        ${x.ans.map((v,i) => `
+          <button
+            class="choice"
+            onclick="answer(${x.id},${i},this)"
+          >
+            ${String.fromCharCode(65+i)}.
+            ${esc(v)}
+          </button>
+        `).join("")}
+
+        <small id="r${x.id}"></small>
+
+      </div>
+
+    `).join("");
+
+  stats();
+}
+
+function deleteQuiz(id){
+
+  if(!confirm("ဒီ Quiz ကို ဖျက်မှာ သေချာပါသလား?")){
+    return;
+  }
+
+  data.quizzes =
+    data.quizzes.filter(x => x.id != id);
+
+  save();
+  renderQuiz();
+}
+
+function answer(id,i,btn){
+
+  const q =
+    data.quizzes.find(x => x.id == id);
+
+  if(!q) return;
+
+  btn.parentElement
+    .querySelectorAll(".choice")
+    .forEach(x => x.disabled = true);
+
+  const r =
+    document.getElementById("r" + id);
+
+  if(i === q.c){
+
+    btn.classList.add("correct");
+    r.textContent = "✅ မှန်ပါတယ်";
+
+  }else{
+
+    btn.classList.add("wrong");
+
+    r.textContent =
+      "❌ မှားပါတယ် — အဖြေမှန် " +
+      String.fromCharCode(65 + q.c);
+  }
+}
+
+
+/* INTRO / SPLASH */
+function playIntroSound(){
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    const ctx = new AC();
+    if(ctx.state === "suspended") ctx.resume();
+    [392,523.25,659.25].forEach((freq,i)=>{
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      const t=ctx.currentTime+i*0.12;
+      osc.type="sine";
+      osc.frequency.value=freq;
+      gain.gain.setValueAtTime(0.001,t);
+      gain.gain.linearRampToValueAtTime(0.16,t+0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001,t+0.45);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t+0.5);
+    });
+  }catch(e){}
+}
+
+function dismissSplash(withSound){
+  const splash=document.getElementById("splash");
+  if(!splash || splash.dataset.closed==="1") return;
+  if(withSound) playIntroSound();
+  splash.dataset.closed="1";
+  splash.style.opacity="0";
+  setTimeout(function(){
+    splash.style.display="none";
+  },450);
+}
+
+/* =========================
+   MUSIC
+========================= */
+
+function addMusic(input){
+
+  const file = input.files[0];
+
+  if(!file) return;
+
+  const url =
+    URL.createObjectURL(file);
+
+  const box =
+    document.createElement("div");
+
+  box.className = "item";
+
+  box.innerHTML = `
+    <button
+      class="del"
+      onclick="this.parentElement.remove();stats()"
+    >
+      Delete
+    </button>
+
+    <b>🎵 ${esc(file.name)}</b>
+
+    <audio
+      class="media"
+      controls
+      src="${url}"
+    ></audio>
+  `;
+
+  document
+    .getElementById("musicList")
+    .prepend(box);
+
+  input.value = "";
+  stats();
+}
+
+/* =========================
+   VIDEO
+========================= */
+
+function addVideo(input){
+
+  const file = input.files[0];
+
+  if(!file) return;
+
+  const url =
+    URL.createObjectURL(file);
+
+  const box =
+    document.createElement("div");
+
+  box.className = "item";
+
+  box.innerHTML = `
+    <button
+      class="del"
+      onclick="this.parentElement.remove();stats()"
+    >
+      Delete
+    </button>
+
+    <b>🎬 ${esc(file.name)}</b>
+
+    <video
+      class="media"
+      controls
+      src="${url}"
+    ></video>
+  `;
+
+  document
+    .getElementById("videoList")
+    .prepend(box);
+
+  input.value = "";
+  stats();
+}
+
+/* =========================
+   START
+========================= */
+
+window.addEventListener(
+  "DOMContentLoaded",
+  function(){
+
+    renderNotes();
+    renderQuiz();
+    stats();
+
+    // Intro ကို အများဆုံး 2.2 စက္ကန့်ပဲ ပြထားမယ်
+    setTimeout(function(){
+      dismissSplash(false);
+    },2200);
+
+  }
+);
+</script>
+
+</body>
+</html>
